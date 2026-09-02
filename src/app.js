@@ -38,10 +38,7 @@ app.get("/employees", async (req, res) => {
         if(employees.length < 1){
           return res.status(404).json({message: "No employees found"});
         }
-        res.json({
-            message: `${employees.length} Employee(s) fetched: `, 
-            employees
-        });
+        res.send(employees);
    } catch (error) {
         res.status(400).json({error: error.message});
    }
