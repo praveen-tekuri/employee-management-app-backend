@@ -6,30 +6,77 @@ const Employee = require("./models/employee.model");
 const app = express();
 app.use(express.json());
 
+// Routes
+
+// CREATE
 app.post("/employees", async (req, res) => {
     try {
         if(Array.isArray(req.body)){
             await Employee.insertMany(req.body);
         }else{
-            const employee = await Employee(req.body);
+            const employee = new Employee(req.body);
             await employee.save();
         }
-        res.json({message: "Employees(s) saved successfully"});
+        res.status(201).json({message: "Employees(s) saved successfully"});
     } catch (error) {
-        res.status(400).json({message: "Failed to save the data: " + error})
+        res.status(400).json({error: error.message});
     }
 })
 
+// READ
 app.get("/employees", async (req, res) => {
    try {
         const employees = await Employee.find();
-        console.log(employees);
-        res.json({message: `Employees fetched, ${employees}`});
+        if(employees.length < 1){
+          return res.status(404).json({message: "No employees found"});
+        }
+        res.json({
+            message: `${employees.length} Employee(s) fetched: `, 
+            employees
+        });
    } catch (error) {
-        res.status(400).json({message: "Failed to get employees", error})
+        res.status(400).json({error: error.message});
    }
 })
 
+// UPDATE
+app.patch("/employees/:id", async(req, res) => {
+    const {id} = req.params;
+    try {
+        const employee = await Employee.findByIdAndUpdate(id, req.body, {returnDocument: "after", runValidators: true})
+        if(!employee){
+            return res.status(404).json({message: "No employee found with this id"});
+        }
+        res.json({message: "Employee updated", employee});
+    } catch (error) {
+        res.status(400).json({error: error.message});
+    }
+})
+
+// DELETE
+app.delete("/employees/:id", async(req, res) => {
+    const {id} = req.params;
+    try {
+        const employee = await Employee.findByIdAndDelete(id);
+        if(!employee){
+            res.status(404).json({message: "No employee found with this id"});
+            return;
+        }
+        res.json({message: "Employee Record deleted:", employee});
+    } catch (error) {
+        res.status(400).json({error: error.message});
+    }
+})
+
+// DB and Server Connection
 connectDB().then(() => {
     app.listen(process.env.PORT, () => console.log(`Server listening on port: ${process.env.PORT}`));
 })
+
+
+// Status Codes:
+// 200 - OK
+// 201 - Created
+// 400 - Bad Request
+// 404 - Not Found
+// 500 - Internal Server Error
