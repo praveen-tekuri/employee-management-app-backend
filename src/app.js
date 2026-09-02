@@ -2,8 +2,16 @@ const express = require("express");
 const connectDB = require("./config/database");
 require("dotenv").config();
 const Employee = require("./models/employee.model");
+const cors = require("cors");
 
 const app = express();
+
+// CORS configuration
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
+
 app.use(express.json());
 
 // Routes
