@@ -73,6 +73,17 @@ app.patch("/employees/:id/inactivate", async(req, res) => {
     }
 })
 
+app.post("/login", async(req, res) => {
+    try {
+        const {email} = req.body;
+        const employee = await Employee.findOne({email});
+        if(!employee) return res.status(401).send("Invalid Credentials");
+        res.json({message: "Login Success", employee});
+    } catch (error) {
+        res.status(400).json({error: error.message})
+    }
+})
+
 // DB and Server Connection
 connectDB().then(() => {
     app.listen(process.env.PORT, () => console.log(`Server listening on port: ${process.env.PORT}`));
