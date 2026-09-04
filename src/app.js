@@ -6,11 +6,11 @@ const cors = require("cors");
 
 const app = express();
 
-// CORS configuration
 app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true
-}))
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 
@@ -58,16 +58,16 @@ app.patch("/employees/:id", async(req, res) => {
     }
 })
 
-// DELETE
-app.delete("/employees/:id", async(req, res) => {
+// UPDATE
+app.patch("/employees/:id/inactivate", async(req, res) => {
     const {id} = req.params;
     try {
-        const employee = await Employee.findByIdAndDelete(id);
+        const employee = await Employee.findByIdAndUpdate(id, {isActive: false}, {returnDocument: "after" });
         if(!employee){
             res.status(404).json({message: "No employee found with this id"});
             return;
         }
-        res.json({message: "Employee Record deleted:", employee});
+        res.json({message: "Employee marked inactive:", employee});
     } catch (error) {
         res.status(400).json({error: error.message});
     }
