@@ -19,13 +19,14 @@ app.use(express.json());
 // CREATE
 app.post("/employees", async (req, res) => {
     try {
+        let saved;
         if(Array.isArray(req.body)){
-            await Employee.insertMany(req.body);
+            saved = await Employee.insertMany(req.body);
         }else{
             const employee = new Employee(req.body);
-            await employee.save();
+            saved = await employee.save();
         }
-        res.status(201).json({message: "Employees(s) saved successfully"});
+        res.status(201).json({message: "Employees(s) saved successfully", saved});
     } catch (error) {
         res.status(400).json({error: error.message});
     }
