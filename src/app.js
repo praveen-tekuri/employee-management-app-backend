@@ -3,6 +3,7 @@ const connectDB = require("./config/database");
 require("dotenv").config();
 const Employee = require("./models/employee.model");
 const cors = require("cors");
+const Shopping = require("./models/shopping.model");
 
 const app = express();
 
@@ -80,6 +81,43 @@ app.post("/login", async(req, res) => {
         const employee = await Employee.findOne({email});
         if(!employee) return res.status(401).send("Invalid Credentials");
         res.json({message: "Login Success", employee});
+    } catch (error) {
+        res.status(400).json({error: error.message})
+    }
+})
+
+app.post("/shopping/add-product", async(req, res) => {
+    try {
+        const {id, quantity, color} = req.body;
+        let product = await Shopping.findOne({id});
+        if(product){
+            product.quantity += quantity;
+            await product.save();
+            return res.json({message: "Product Quantity updated", product});
+        }else{
+            const newProduct = new Shopping(req.body);
+            const product = await newProduct.save();
+            res.json({message: "Product has been Added", product});
+        }
+    } catch (error) {
+        res.status(400).json({error: error.message})
+    }
+})
+
+app.get("/shopping/get-products", async(req, res) => {
+    try {
+        const products = await Shopping.find();
+        res.json({message: products.length + " Products fetched", products})
+    } catch (error) {
+        res.status(400).json({error: error.message})
+    }
+})
+
+app.delete("/shopping/delete-product/:id", async(req, res) => {
+    try {
+        const {id} = req.params;
+        const deletedProduct = await Shopping.findByIdAndDelete(id);
+        res.json({message: "Product has been deleted", deletedProduct});        
     } catch (error) {
         res.status(400).json({error: error.message})
     }
